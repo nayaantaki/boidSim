@@ -1,4 +1,4 @@
-import pygame.draw_py
+import pygame
 import random
 import json
 
@@ -7,52 +7,82 @@ with open('sim_configs.json', 'r') as file:
 
 class Boid:
     def __init__(self):
-        self.position = pygame.Vector2(random.uniform(0, sim_configs["WIDTH"]), random.uniform(0, sim_configs["HEIGHT"]))
-        self.velocity = pygame.Vector2(random.uniform(-1, 1), random.uniform(-1, 1)).normalize() * sim_configs["MAX_SPEED"]
+        self.position = pygame.Vector2(
+            random.uniform(0, sim_configs["WIDTH"]),
+            random.uniform(0, sim_configs["HEIGHT"])
+        )
+        direction = pygame.Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
+        self.velocity = direction.normalize() * sim_configs["MAX_SPEED"] if direction.length_squared() > 0 else pygame.Vector2(1, 0)
 
-    def update(self):
+    def update(self, grid):
+        alignment_vector = self.alignment(grid)
+
+        if alignment_vector.length_squared() > 0:
+            self.velocity = alignment_vector.normalize() * sim_configs["MAX_SPEED"]
+
         self.position += self.velocity
-        self.velocity = self.alignment().normalize() * sim_configs["MAX_SPEED"]
+        self.wrap_around_edges()
 
-        if self.position.x < 0: self.position.x = sim_configs["WIDTH"]
-        if self.position.x > sim_configs["WIDTH"]: self.position.x = 0
-        if self.position.y < 0: self.position.y = sim_configs["HEIGHT"]
-        if self.position.y > sim_configs["HEIGHT"]: self.position.y = 0
+    def wrap_around_edges(self):
+        w, h = sim_configs["WIDTH"], sim_configs["HEIGHT"]
+        if self.position.x < 0: self.position.x = w
+        elif self.position.x > w: self.position.x = 0
+        if self.position.y < 0: self.position.y = h
+        elif self.position.y > h: self.position.y = 0
 
     def draw(self, screen):
         angle = self.velocity.angle_to(pygame.Vector2(0, -1))
-
-        pointer_shape = [
-            pygame.Vector2(0, -sim_configs["BOID_SIZE"]), # tip
-            pygame.Vector2(-sim_configs["BOID_SIZE"], sim_configs["BOID_SIZE"]), # bottom left
-            pygame.Vector2(0, (sim_configs["BOID_SIZE"]/3)), # centroid
-            pygame.Vector2(sim_configs["BOID_SIZE"], sim_configs["BOID_SIZE"]) #bottom right
+        size = sim_configs["BOID_SIZE"]
+        shape = [
+            pygame.Vector2(0, -size),
+            pygame.Vector2(-size, size),
+            pygame.Vector2(0, size / 3),
+            pygame.Vector2(size, size)
         ]
+        rotated = [point.rotate(-angle) + self.position for point in shape]
+        pygame.draw.polygon(screen, (255, 255, 255), rotated)
 
-        rotated_pointer = [point.rotate(-angle) + self.position for point in pointer_shape]
+    def alignment(self, grid):
+        vr = sim_configs["ALIGNMENT_VR"]
+        neighbors = self.find_flock(vr, grid)
 
-        pygame.draw.polygon(screen, (255, 255, 255), rotated_pointer)
-
-        # end = self.position + self.velocity.normalize() * 20
-        # pygame.draw.line(screen, (0, 255, 0), self.position, end, 2)
-
-    def alignment(self):
-        flock = self.find_flock(sim_configs["ALIGNMENT_VR"])
+        if not neighbors:
+            return self.velocity
 
         total_velocity = pygame.Vector2(0, 0)
-        for boid in flock:
+        for boid in neighbors:
             total_velocity += boid.velocity
-        # total_velocity = total_velocity.normalize() * sim_configs["MAX_SPEED"]
-        flock_velocity = (total_velocity/len(flock))
 
-        return flock_velocity
+        return total_velocity / len(neighbors)
 
-    def find_flock(self, vr):
-        flock = []
-        for boid in boids:
-            if self.position.distance_to(boid.position) <= vr:
-                flock.append(boid)
-        return flock
+    def find_flock(self, vr, grid):
+        cell_size = sim_configs["CELL_SIZE"]
+        my_cell_x = int(self.position.x // cell_size)
+        my_cell_y = int(self.position.y // cell_size)
 
+        neighbors = []
+        vr_sq = vr * vr
 
+        for dx in [-1, 0, 1]:
+            for dy in [-1, 0, 1]:
+                cell = (my_cell_x + dx, my_cell_y + dy)
+                if cell in grid:
+                    for other in grid[cell]:
+                        if other is not self and (self.position - other.position).length_squared() <= vr_sq:
+                            neighbors.append(other)
+        return neighbors
+
+def build_spatial_grid(boids, cell_size):
+    grid = {}
+    for b in boids:
+        cell = (
+            int(b.position.x // cell_size),
+            int(b.position.y // cell_size)
+        )
+        if cell not in grid:
+            grid[cell] = []
+        grid[cell].append(b)
+    return grid
+
+# Initialize boids
 boids = [Boid() for _ in range(sim_configs["NO_BOIDS"])]

@@ -1,10 +1,11 @@
 {
   "WIDTH": 1100,
   "HEIGHT": 700,
-  "NO_BOIDS": 200,
-  "MAX_SPEED": 4,
+  "NO_BOIDS": 700,
+  "MAX_SPEED": 7,
   "BOID_SIZE": 5,
   "SEPARATION_VR": 5,
-  "ALIGNMENT_VR": 15,
-  "COHESION_VR": 5
+  "ALIGNMENT_VR": 10,
+  "COHESION_VR": 5,
+  "CELL_SIZE": 100
 }
