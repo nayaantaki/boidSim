@@ -1,0 +1,10 @@
+{
+  "WIDTH": 1100,
+  "HEIGHT": 700,
+  "NO_BOIDS": 200,
+  "MAX_SPEED": 4,
+  "BOID_SIZE": 5,
+  "SEPARATION_VR": 5,
+  "ALIGNMENT_VR": 15,
+  "COHESION_VR": 5
+}

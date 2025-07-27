@@ -1,12 +1,24 @@
-from sim_configs import *
-from boid import Boid
+from boid import Boid, boids
+import pygame
+import json
+
+with open('sim_configs.json', 'r') as file:
+    sim_configs = json.load(file)
+
+#<--------------------------DEPENDENCIES--------------------------->
 
 pygame.init()
+
+screen = pygame.display.set_mode((sim_configs["WIDTH"], sim_configs["HEIGHT"]))
+pygame.display.set_caption('boid sim')
+
+icon_image = pygame.image.load('boid.png')
+pygame.display.set_icon(icon_image)
 
 clock = pygame.time.Clock()
 FPS = 60
 
-boids = [Boid() for _ in range(1000)]
+#<---------------------------BASE SETUP------------------------------>
 
 running = True
 while running:
@@ -18,7 +30,9 @@ while running:
 
     for boid in boids:
         boid.update()
-        Boid.draw(boid)
+        Boid.draw(boid, screen)
+        # print(boid.find_flock(sim_configs["ALIGNMENT_VR"]))
+        print(boid.velocity.normalize())
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
