@@ -13,7 +13,7 @@ FPS = 60
 
 running = True
 while running:
-    screen.fill((20, 20, 20))
+    screen.fill('#ebe8e1')
 
     grid = build_spatial_grid(boids, sim_configs["CELL_SIZE"])
 
@@ -22,7 +22,7 @@ while running:
         boid.draw(screen)
 
     fps = int(clock.tick(FPS))
-    fps_text = pygame.font.SysFont("consolas", 20).render(f"FPS: {fps}", True, (255, 255, 0))
+    fps_text = pygame.font.SysFont("consolas", 20).render(f"FPS: {fps}", True, (0, 255, 0))
     screen.blit(fps_text, (10, 10))
 
     pygame.display.flip()

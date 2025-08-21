@@ -16,9 +16,12 @@ class Boid:
 
     def update(self, grid):
         alignment_vector = self.alignment(grid)
+        cohesion_vector = self.cohesion(grid)
 
-        if alignment_vector.length_squared() > 0:
-            self.velocity = alignment_vector.normalize() * sim_configs["MAX_SPEED"]
+        steering = alignment_vector + cohesion_vector
+
+        if steering.length_squared() > 0:
+            self.velocity = steering.normalize() * sim_configs["MAX_SPEED"]
 
         self.position += self.velocity
         self.wrap_around_edges()
@@ -40,7 +43,9 @@ class Boid:
             pygame.Vector2(size, size)
         ]
         rotated = [point.rotate(-angle) + self.position for point in shape]
-        pygame.draw.polygon(screen, (255, 255, 255), rotated)
+
+        colors = ['#f06960', '#6f7ced', '#edd651']
+        pygame.draw.polygon(screen, colors[random.randint(0, 2)], rotated)
 
     def alignment(self, grid):
         vr = sim_configs["ALIGNMENT_VR"]
@@ -54,6 +59,22 @@ class Boid:
             total_velocity += boid.velocity
 
         return total_velocity / len(neighbors)
+
+    def cohesion(self, grid):
+        vr = sim_configs["COHESION_VR"]
+        neighbors = self.find_flock(vr, grid)
+
+        if not neighbors:
+            return self.velocity
+
+        total_positions = pygame.Vector2(0, 0)
+        for boid in neighbors:
+            total_positions += boid.position
+        com = total_positions / len(neighbors)
+
+        desired_velocity = com - self.position
+
+        return desired_velocity
 
     def find_flock(self, vr, grid):
         cell_size = sim_configs["CELL_SIZE"]

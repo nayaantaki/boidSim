@@ -1,7 +1,7 @@
 {
   "WIDTH": 1100,
   "HEIGHT": 700,
-  "NO_BOIDS": 700,
+  "NO_BOIDS": 500,
   "MAX_SPEED": 7,
   "BOID_SIZE": 5,
   "SEPARATION_VR": 5,
