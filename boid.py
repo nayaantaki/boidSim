@@ -17,8 +17,9 @@ class Boid:
     def update(self, grid):
         alignment_vector = self.alignment(grid)
         cohesion_vector = self.cohesion(grid)
+        separation_vector = self.separation(grid)
 
-        steering = alignment_vector + cohesion_vector
+        steering = (alignment_vector * sim_configs["ALGN_WEIGHT"]) + (cohesion_vector * sim_configs["CHSIN_WEIGHT"]) + (separation_vector * sim_configs["SEP_WEIGHT"])
 
         if steering.length_squared() > 0:
             self.velocity = steering.normalize() * sim_configs["MAX_SPEED"]
@@ -75,6 +76,26 @@ class Boid:
         desired_velocity = com - self.position
 
         return desired_velocity
+
+    def separation(self, grid):
+        vr = sim_configs["SEPARATION_VR"]
+        neighbors = self.find_flock(vr, grid)
+
+        if not neighbors:
+            return self.velocity
+
+        move = pygame.Vector2(0, 0)
+        for boid in neighbors:
+            diff = self.position - boid.position
+            dist_sq = diff.length_squared()
+            if dist_sq < 0:
+                move += diff/dist_sq
+
+        if move.length_squared() > 0:
+            return move.normalize() * sim_configs["MAX_SPEED"]
+
+        return pygame.Vector2(0, 0)
+
 
     def find_flock(self, vr, grid):
         cell_size = sim_configs["CELL_SIZE"]
