@@ -20,6 +20,7 @@ class Boid:
         separation_vector = self.separation(grid)
 
         steering = (alignment_vector * sim_configs["ALGN_WEIGHT"]) + (cohesion_vector * sim_configs["CHSIN_WEIGHT"]) + (separation_vector * sim_configs["SEP_WEIGHT"])
+        self.velocity += steering
 
         if steering.length_squared() > 0:
             self.velocity = steering.normalize() * sim_configs["MAX_SPEED"]

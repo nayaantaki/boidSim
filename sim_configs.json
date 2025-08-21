@@ -1,13 +1,16 @@
 {
   "WIDTH": 1100,
   "HEIGHT": 700,
-  "NO_BOIDS": 500,
-  "MAX_SPEED": 7,
+  "NO_BOIDS": 300,
+  "MAX_SPEED": 4,
   "BOID_SIZE": 7,
-  "SEPARATION_VR": 5,
+
+  "SEPARATION_VR": 20,
   "ALIGNMENT_VR": 5,
   "COHESION_VR": 5,
+
   "CELL_SIZE": 100,
+
   "SEP_WEIGHT": 100.0,
   "ALGN_WEIGHT": 1.0,
   "CHSIN_WEIGHT": 0.3
